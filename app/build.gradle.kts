@@ -1,4 +1,3 @@
-import com.android.build.api.dsl.Packaging
 import com.android.build.gradle.internal.cxx.configure.gradleLocalProperties
 
 plugins {
@@ -9,25 +8,13 @@ plugins {
     id("com.google.dagger.hilt.android")
 }
 
-
 val key: String = gradleLocalProperties(rootDir).getProperty("apiKey")
-
-
 
 android {
     namespace = "com.net.movie"
     compileSdk = 34
 
-
-
-
-
-
-
-
-
-
-            defaultConfig {
+    defaultConfig {
         applicationId = "com.net.movie"
         minSdk = 24
         targetSdk = 34
@@ -88,7 +75,7 @@ android {
 
     packaging {
 
-        exclude ("META-INF/DEPENDENCIES")
+        exclude("META-INF/DEPENDENCIES")
         resources {
             excludes += "/META-INF/{AL2.0,LGPL2.1}"
         }
@@ -137,7 +124,6 @@ dependencies {
 
     implementation("io.ktor:ktor-server-core:2.3.4")
     implementation("androidx.compose.material3:material3:1.1.2")
-
 }
 
 // Allow references to generated code

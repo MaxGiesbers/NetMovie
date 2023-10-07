@@ -45,10 +45,10 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
 
 
-
         setContent {
 
             AppTheme {
+
                 // A surface container using the 'background' color from the theme
                 Surface(
                     modifier = Modifier.fillMaxSize(),
