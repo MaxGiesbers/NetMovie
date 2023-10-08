@@ -7,11 +7,11 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 
 import androidx.compose.foundation.layout.fillMaxHeight
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.Alignment
@@ -26,23 +26,15 @@ import com.net.movie.shared.layout.MovieList
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.net.movie.R
 
-
 @Composable
-fun HomeScreen(navHostController: NavHostController, movieViewModel: MovieViewModel = hiltViewModel()) {
+fun HomeScreen(navHostController: NavHostController, movieViewModel: HomeViewModel = hiltViewModel()) {
+    val movies = movieViewModel.movies.collectAsState()
     Column(
         modifier = Modifier
             .fillMaxWidth(1f)
             .fillMaxHeight(),
         verticalArrangement = Arrangement.Center,
-        horizontalAlignment = Alignment.CenterHorizontally
-    ) {
-
-
-
-
-
-
-        val movies = movieViewModel.movies.collectAsState()
+        horizontalAlignment = Alignment.CenterHorizontally) {
         movies.value?.let {
             when (it) {
                 is Resource.Failure -> {
@@ -50,10 +42,11 @@ fun HomeScreen(navHostController: NavHostController, movieViewModel: MovieViewMo
                         LocalContext.current,
                         it.exception.message!!,
                         Toast.LENGTH_SHORT
-                    )
+                    ).show()
                 }
 
-                Resource.Loading -> { //TODO
+                Resource.Loading -> {
+                    CircularProgressIndicator()
                 }
 
                 is Resource.Success -> {
@@ -74,7 +67,10 @@ fun HomeScreen(navHostController: NavHostController, movieViewModel: MovieViewMo
                         imageModifier =
                         Modifier
                             .width(150.dp)
-                            .height(200.dp)
+                            .height(200.dp),
+                        itemSelected = { identifier ->
+                            navHostController.navigate( "movie/$identifier")
+                        }
                     )
                 }
             }

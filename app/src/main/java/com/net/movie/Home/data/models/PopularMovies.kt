@@ -3,7 +3,6 @@ package com.net.movie.Home.data.models
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
-
 @Serializable
 data class PopularMovies(
     @SerialName("page")
@@ -15,8 +14,6 @@ data class PopularMovies(
     @SerialName("total_results")
     val totalResults: Int
 )
-
-
 
 @Serializable
 data class Movies(
@@ -50,9 +47,5 @@ data class Movies(
     val voteCount: Int
 ) {
     val fullPosterPath: String
-
         get() = "https://image.tmdb.org/t/p/original/$posterPath"
 }
-
-
-//    https://image.tmdb.org/t/p/w500/1E5baAaEse26fej7uHcjOgEE2t2.jpg

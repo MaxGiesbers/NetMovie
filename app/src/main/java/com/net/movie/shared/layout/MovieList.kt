@@ -1,7 +1,7 @@
 package com.net.movie.shared.layout
 
 
-import androidx.compose.foundation.background
+import android.util.Log
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -42,6 +42,7 @@ import com.net.movie.ui.theme.AppTheme
 @Composable
 fun PreviewMovielist() {
 
+    var item: ((item: Int)->Unit)? = null
     val test =  listOf(Movies(
         false,
         "pizza",
@@ -77,15 +78,17 @@ fun PreviewMovielist() {
             modifier = Modifier.fillMaxSize(),
             color = MaterialTheme.colorScheme.background
         ) {
-            MovieList(
-                movies = test,
-                listModifier = Modifier.fillMaxWidth(),
-                rowModifier = Modifier.padding(0.dp),
-                imageModifier =
-                Modifier
-                    .width(150.dp)
-                    .height(200.dp)
-            )
+            if (item != null) {
+                MovieList(
+                    movies = test,
+                    listModifier = Modifier.fillMaxWidth(),
+                    rowModifier = Modifier.padding(0.dp),
+                    imageModifier =
+                    Modifier
+                        .width(150.dp)
+                        .height(200.dp), itemSelected = item
+                )
+            }
         }}
 
 }
@@ -95,6 +98,7 @@ fun MovieList(
     listModifier: Modifier,
     rowModifier: Modifier,
     imageModifier: Modifier,
+    itemSelected: (item: Int) -> Unit
 ) {
     LazyColumn(
         verticalArrangement = Arrangement.spacedBy(8.dp),
@@ -137,6 +141,7 @@ fun MovieList(
 
                         Spacer(modifier = Modifier.height(10.dp))
                         Button(onClick = {
+                            itemSelected(item.id)
 
                         }) {
                             Text(text = "More info")
