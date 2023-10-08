@@ -4,6 +4,7 @@ import com.net.movie.BuildConfig
 import com.net.movie.Home.data.data_source.HttpRoutes
 import com.net.movie.Home.data.data_source.Resource
 import com.net.movie.Home.data.models.MovieDetail
+import com.net.movie.Home.data.models.MovieTrailer
 import com.net.movie.Home.data.models.PopularMovies
 import io.ktor.client.HttpClient
 import io.ktor.client.call.body
@@ -29,12 +30,26 @@ class MovieRepositoryImpl @Inject constructor(private val httpClient: HttpClient
     }
 
 
-    //TODO get request fails due a unexpected null
     override suspend fun getMovieDetails(movieId: String): Resource<MovieDetail> {
         return try {
             Resource.Success(
                 httpClient.get {
                     url(HttpRoutes.BASE_URL + movieId)
+                    parameter("api_key", BuildConfig.apiKey)
+                }.body()
+            )
+        }
+        catch (e: Exception) {
+            e.printStackTrace()
+            Resource.Failure(e)
+        }
+    }
+
+    override suspend fun getMovieTrailer(movieId: String): Resource<MovieTrailer> {
+        return try {
+            Resource.Success(
+                httpClient.get {
+                    url("${HttpRoutes.BASE_URL} ${movieId}/videos")
                     parameter("api_key", BuildConfig.apiKey)
                 }.body()
             )

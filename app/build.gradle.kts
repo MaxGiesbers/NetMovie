@@ -124,6 +124,9 @@ dependencies {
 
     implementation("io.ktor:ktor-server-core:2.3.4")
     implementation("androidx.compose.material3:material3:1.1.2")
+
+    "implementation" ("com.pierfrancescosoffritti.androidyoutubeplayer:core:11.1.0")
+
 }
 
 // Allow references to generated code
