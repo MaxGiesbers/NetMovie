@@ -29,6 +29,8 @@ import com.net.movie.R
 @Composable
 fun HomeScreen(navHostController: NavHostController, movieViewModel: HomeViewModel = hiltViewModel()) {
     val movies = movieViewModel.movies.collectAsState()
+
+
     Column(
         modifier = Modifier
             .fillMaxWidth(1f)
@@ -69,7 +71,8 @@ fun HomeScreen(navHostController: NavHostController, movieViewModel: HomeViewMod
                             .width(150.dp)
                             .height(200.dp),
                         itemSelected = { identifier ->
-                            navHostController.navigate( "movie/$identifier")
+                            navHostController.navigate( "movie/$identifier"){
+                            }
                         }
                     )
                 }

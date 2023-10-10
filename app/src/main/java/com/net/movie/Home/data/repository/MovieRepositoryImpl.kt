@@ -1,9 +1,11 @@
 package com.net.movie.Home.data.repository
 
+import android.util.Log
 import com.net.movie.BuildConfig
 import com.net.movie.Home.data.data_source.HttpRoutes
 import com.net.movie.Home.data.data_source.Resource
 import com.net.movie.Home.data.models.MovieDetail
+import com.net.movie.Home.data.models.MovieInformation
 import com.net.movie.Home.data.models.MovieTrailer
 import com.net.movie.Home.data.models.PopularMovies
 import io.ktor.client.HttpClient
@@ -13,6 +15,8 @@ import io.ktor.client.request.parameter
 import io.ktor.client.request.url
 import java.lang.Exception
 import javax.inject.Inject
+import kotlinx.coroutines.*
+import kotlinx.coroutines.async
 
 class MovieRepositoryImpl @Inject constructor(private val httpClient: HttpClient): MovieRepository {
     override suspend fun getPopularMovies(): Resource<PopularMovies> {
@@ -30,33 +34,47 @@ class MovieRepositoryImpl @Inject constructor(private val httpClient: HttpClient
     }
 
 
-    override suspend fun getMovieDetails(movieId: String): Resource<MovieDetail> {
+    override suspend fun getMovieDetails(movieId: String): MovieDetail? {
         return try {
-            Resource.Success(
-                httpClient.get {
-                    url(HttpRoutes.BASE_URL + movieId)
-                    parameter("api_key", BuildConfig.apiKey)
-                }.body()
-            )
+            httpClient.get {
+                url(HttpRoutes.BASE_URL + movieId)
+                parameter("api_key", BuildConfig.apiKey)
+            }.body()
         }
         catch (e: Exception) {
             e.printStackTrace()
-            Resource.Failure(e)
+            Log.e(javaClass.simpleName,e.toString() )
+            return null
         }
     }
 
-    override suspend fun getMovieTrailer(movieId: String): Resource<MovieTrailer> {
+    override suspend fun getMovieTrailer(movieId: String): MovieTrailer? {
         return try {
-            Resource.Success(
-                httpClient.get {
-                    url("${HttpRoutes.BASE_URL} ${movieId}/videos")
-                    parameter("api_key", BuildConfig.apiKey)
-                }.body()
-            )
+            httpClient.get {
+                url("${HttpRoutes.BASE_URL} ${movieId}/videos")
+                parameter("api_key", BuildConfig.apiKey)
+            }.body()
         }
         catch (e: Exception) {
             e.printStackTrace()
             Resource.Failure(e)
+            Log.e(javaClass.simpleName,e.toString() )
+
+            return null
         }
+    }
+    override suspend fun getMovie(movieId: String): MovieInformation
+    {
+        val movieTrailer = getMovieTrailer(movieId)
+        val movieDetails = getMovieDetails(movieId = movieId)
+
+        return MovieInformation(
+            movieDetails!!.title,
+            movieDetails.overview,
+            movieDetails.genres.map { it.name },
+            movieDetails.release_date,
+            movieDetails.popularity,
+            movieTrailer!!.results.first().key
+        )
     }
 }

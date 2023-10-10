@@ -47,6 +47,9 @@ android {
 
 
         release {
+
+            buildConfigField("String", "apiKey", key)
+
             isMinifyEnabled = false
             signingConfig = signingConfigs.getByName("debug")
 //            signingConfig = signingConfigs.debu
@@ -124,6 +127,10 @@ dependencies {
 
     implementation("io.ktor:ktor-server-core:2.3.4")
     implementation("androidx.compose.material3:material3:1.1.2")
+
+
+    implementation ("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.7.2")
+
 
     "implementation" ("com.pierfrancescosoffritti.androidyoutubeplayer:core:11.1.0")
 

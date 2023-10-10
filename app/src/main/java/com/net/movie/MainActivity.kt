@@ -1,6 +1,7 @@
 package com.net.movie
 
 import android.os.Bundle
+import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.layout.fillMaxSize
@@ -31,12 +32,18 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.navigation.NavDestination
+import androidx.navigation.NavDestination.Companion.hierarchy
+import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.NavType
 
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
+import androidx.navigation.compose.currentBackStackEntryAsState
+import androidx.navigation.compose.navigation
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
+import androidx.navigation.navOptions
 import com.net.movie.Home.HomeScreen
 import com.net.movie.Home.MovieScreen
 import com.net.movie.Home.NewMovies
@@ -104,14 +111,38 @@ fun MainNavigation() {
     }
 
     val navController = rememberNavController()
+
+    // get navBackStackEntry as State so we can refresh the ui onBackStack event.
+    val navBackStackEntry = navController.currentBackStackEntryAsState()
+    // get selected route name and show on SmallTopBar.
+    // parent route name means nested graph route name.
+    val parentRouteName = navBackStackEntry.value?.destination?.parent?.route
+
+    //Get current page name from backStackEntry
+    val routeName = navBackStackEntry.value?.destination?.route
+
     Scaffold(
         bottomBar = {
             NavigationBar {
                 items.forEachIndexed { index, item ->
-                    NavigationBarItem(selected = selectedItemIndex == index,
+
+                    NavigationBarItem(selected = parentRouteName == item.route,
                         onClick = {
+
                             selectedItemIndex = index
-                            navController.navigate(item.route)
+
+                            navController.navigate(item.route,navOptions {
+                                // avoid building up a large stack of destinations
+                                //on the back stack as users select items.
+                                popUpTo(navController.graph.findStartDestination().id){
+                                    saveState = true
+                                }
+
+                                // Avoid multiple copies fo the same destination when
+                                // reselecting the same item.
+                                launchSingleTop = true
+                                restoreState = true
+                            })
                         },
                         label = {
                             Text(text = item.title)
@@ -129,7 +160,7 @@ fun MainNavigation() {
                                 }
                             ) {
                                 Icon(
-                                    imageVector = if (index == selectedItemIndex) item.selectedIcon else item.unselectedIcon,
+                                    imageVector = if (parentRouteName == item.route) item.selectedIcon else item.unselectedIcon,
                                     contentDescription = item.title
                                 )
                             }
@@ -140,27 +171,22 @@ fun MainNavigation() {
 
         }
     ) { innerPadding ->
-        NavHost(
-            navController,
-            startDestination = items[0].route,
-            Modifier.padding(innerPadding)
-        ) {
-            composable(items[0].route) {
-                HomeScreen(navController)
+        NavHost(navController, startDestination = "home", Modifier.padding(innerPadding)) {
+
+            navigation(startDestination = "homepage", route = "home") {
+                composable("homepage") {
+                    HomeScreen(navController)
+                }
+                composable("movie/{movieId}") {
+                    MovieScreen(navHostController = navController)
+                }
             }
 
-            composable(items[1].route) {
-                NewMovies(navController)
-            }
+            navigation(startDestination = "newMoviesPage", route = "newMovies") {
 
-            composable(items[2].route) {
-                NewMovies(navController)
-            }
-
-            composable("movie/{movieId}") {
-
-                //val arguments = listOf(navArgument("movieId") { type = NavType.IntType })
-                MovieScreen(navController)
+                composable("newMoviesPage") {
+                    NewMovies(navController)
+                }
             }
         }
     }

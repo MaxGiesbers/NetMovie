@@ -6,6 +6,7 @@ import com.net.movie.Home.data.data_source.Resource
 import com.net.movie.Home.data.models.PopularMovies
 import com.net.movie.Home.data.repository.MovieRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.async
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
@@ -19,6 +20,7 @@ class HomeViewModel @Inject constructor(val movieRepository: MovieRepository): V
 
     init {
         viewModelScope.launch {
+
             _movies.value = Resource.Loading
             _movies.value = movieRepository.getPopularMovies()
         }
