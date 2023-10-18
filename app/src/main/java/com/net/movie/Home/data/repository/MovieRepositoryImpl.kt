@@ -1,7 +1,5 @@
 package com.net.movie.Home.data.repository
 
-import android.util.Log
-import com.net.movie.BuildConfig
 import com.net.movie.Home.data.data_source.HttpRoutes
 import com.net.movie.Home.data.data_source.Resource
 import com.net.movie.Home.data.models.MovieDetail
@@ -11,70 +9,70 @@ import com.net.movie.Home.data.models.PopularMovies
 import io.ktor.client.HttpClient
 import io.ktor.client.call.body
 import io.ktor.client.request.get
-import io.ktor.client.request.parameter
 import io.ktor.client.request.url
-import java.lang.Exception
-import javax.inject.Inject
-import kotlinx.coroutines.*
+import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.async
 
-class MovieRepositoryImpl @Inject constructor(private val httpClient: HttpClient): MovieRepository {
+import kotlinx.coroutines.withContext
+import javax.inject.Inject
+import kotlin.jvm.Throws
+
+class MovieRepositoryImpl @Inject constructor(private val httpClient: HttpClient) :
+    MovieRepository {
     override suspend fun getPopularMovies(): Resource<PopularMovies> {
         return try {
             Resource.Success(
                 httpClient.get {
                     url(HttpRoutes.POPULAIR_MOVIES_URL)
-                    parameter("api_key", BuildConfig.apiKey)
                 }.body()
             )
-        }catch (e: Exception) {
+        } catch (e: Exception) {
             e.printStackTrace()
             Resource.Failure(e)
         }
     }
 
-
-    override suspend fun getMovieDetails(movieId: String): MovieDetail? {
-        return try {
-            httpClient.get {
-                url(HttpRoutes.BASE_URL + movieId)
-                parameter("api_key", BuildConfig.apiKey)
-            }.body()
-        }
-        catch (e: Exception) {
-            e.printStackTrace()
-            Log.e(javaClass.simpleName,e.toString() )
-            return null
-        }
+    @Throws
+    suspend fun getMovieDetails(movieId: String): MovieDetail? {
+        return httpClient.get {
+            url(movieId)
+        }.body()
     }
 
-    override suspend fun getMovieTrailer(movieId: String): MovieTrailer? {
+    @Throws
+    suspend fun getMovieTrailer(movieId: String): MovieTrailer {
+        return httpClient.get {
+            url("${movieId}/videos")
+        }.body()
+    }
+
+    override suspend fun getMovie(
+        movieId: String,
+        dispatcher: CoroutineDispatcher
+    ): Resource<MovieInformation> {
         return try {
-            httpClient.get {
-                url("${HttpRoutes.BASE_URL} ${movieId}/videos")
-                parameter("api_key", BuildConfig.apiKey)
-            }.body()
-        }
-        catch (e: Exception) {
-            e.printStackTrace()
+            withContext(dispatcher) {
+                val movieTrailerResponse = async {
+                    getMovieTrailer(movieId)
+                }.await()
+
+                val movieDetailsResponse = async {
+                    getMovieDetails(movieId = movieId)
+                }.await()
+
+                return@withContext Resource.Success(
+                    MovieInformation(
+                        movieDetailsResponse!!.title,
+                        movieDetailsResponse.overview,
+                        movieDetailsResponse.genres.map { it.name },
+                        movieDetailsResponse.release_date,
+                        movieDetailsResponse.popularity,
+                        movieTrailerResponse.results.first().key
+                    )
+                )
+            }
+        } catch (e: Exception) {
             Resource.Failure(e)
-            Log.e(javaClass.simpleName,e.toString() )
-
-            return null
         }
-    }
-    override suspend fun getMovie(movieId: String): MovieInformation
-    {
-        val movieTrailer = getMovieTrailer(movieId)
-        val movieDetails = getMovieDetails(movieId = movieId)
-
-        return MovieInformation(
-            movieDetails!!.title,
-            movieDetails.overview,
-            movieDetails.genres.map { it.name },
-            movieDetails.release_date,
-            movieDetails.popularity,
-            movieTrailer!!.results.first().key
-        )
     }
 }

@@ -3,6 +3,7 @@ package com.net.movie.Home
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.net.movie.Home.data.data_source.Resource
 import com.net.movie.Home.data.models.MovieInformation
 
 import com.net.movie.Home.data.repository.MovieRepository
@@ -23,8 +24,18 @@ class MovieViewModel @Inject constructor(
 
     init {
         viewModelScope.launch {
-            val movieInfo = movieRepository.getMovie(checkNotNull(savedStateHandle["movieId"]))
-            _trailerId.value = movieInfo
+            when(val response = movieRepository.getMovie(checkNotNull(savedStateHandle["movieId"])))
+            {
+                is Resource.Failure -> {
+
+                }
+                Resource.Loading -> {
+                    
+                }
+                is Resource.Success -> {
+                    _trailerId.value = response.result
+                }
+            }
         }
     }
     val movieId: String = checkNotNull(savedStateHandle["movieId"])

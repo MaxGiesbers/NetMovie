@@ -6,11 +6,11 @@ import com.net.movie.Home.data.models.MovieInformation
 import com.net.movie.Home.data.models.MovieTrailer
 import com.net.movie.Home.data.models.Movies
 import com.net.movie.Home.data.models.PopularMovies
+import kotlinx.coroutines.CoroutineDispatcher
+import kotlinx.coroutines.Dispatchers
 
 interface MovieRepository
 {
     suspend fun getPopularMovies(): Resource<PopularMovies>
-     suspend fun getMovieDetails(movieId: String): MovieDetail?
-     suspend fun getMovieTrailer(movieId: String) : MovieTrailer?
-    suspend fun getMovie(movieId: String): MovieInformation
+    suspend fun getMovie(movieId: String, dispatcher: CoroutineDispatcher = Dispatchers.IO): Resource<MovieInformation>
 }
